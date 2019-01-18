@@ -1,0 +1,16 @@
+CC=g++
+GTEST_DIR=./gtest/googletest
+CFLAGS=-std=c++11 -isystem $(GTEST_DIR)/include -I${GTEST_DIR} -pthread
+
+libgtest.a: $(GTEST_DIR)/src/gtest-all.cc 
+	$(CC) -c $(GTEST_DIR)/src/gtest-all.cc
+	ar -rv libgtest.a gtest-all.o
+  
+listener_test.o: listener_test.cpp
+	$(CC) -c $(CFLAGS) listener_test.cpp
+
+listener.o: listener.cpp listener.h
+	$(CC) -c listener.cpp
+
+listener_test: listener_test.o listener.o libgtest.a
+	$(CC) $(CFLAGS) listener_test.o listener.o libgtest.a -o listener_test

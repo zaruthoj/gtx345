@@ -16,7 +16,10 @@ void Listener::add_child(Listener *child, bool active) {
   child->parent_ = this;
 }
 
-void Listener::unlink() {
+void Listener::unlink(Listener **head_ptr) {
+  if(*head_ptr == this) {
+    *head_ptr = next_;
+  }
   if (prev_) {
     prev_->next_ = next_;
   }
@@ -28,26 +31,20 @@ void Listener::unlink() {
 }
 
 void Listener::push(Listener **head_ptr) {
-  Serial.println((uint16_t)head_ptr);
   Listener *head = *head_ptr;
-  Serial.println((uint16_t)head);
   if (head) head->prev_ = this;
-  Serial.println((uint16_t)head->prev_);
   this->next_ = head;
-  Serial.println("next");
   this->prev_ = NULL;
-  Serial.println("prev");
   *head_ptr = this;
-  Serial.println("ptr");
 }
 
 void Listener::activate_child(Listener *child) {
-  child->unlink();
+  child->unlink(&standby_);
   child->push(&active_);
 }
 
 void Listener::deactivate_child(Listener *child) {
-  child->unlink();
+  child->unlink(&active_);
   child->push(&standby_);
 }
 
@@ -55,11 +52,13 @@ void Listener::toggle_child(Listener *child) {
   Listener *test = child;
   while (test->prev_ != NULL) test = test->prev_;
   Listener **new_head = (test == active_) ? &standby_ : &active_;
-  child->unlink();
+  Listener **old_head = (test == active_) ? &active_ : &standby_;
+
+  child->unlink(old_head);
   child->push(new_head);
 }
 
-void Tile::on_event(Event event_id, bool is_start=true) {
+void Tile::on_event(Event event_id, bool is_start) {
   if (event_id == EVENT_RENDER) {
     render();
   } else {

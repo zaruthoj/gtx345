@@ -1,8 +1,11 @@
 #ifndef LISTENER_H
 #define LISTENER_H
 
-//#include <Arduino.h>
-
+#ifdef __x86_64__
+#include <cstdlib>
+#else
+#include <Arduino.h>
+#endif
 
 enum Event {
   BUTTON_CRSR = 0x00,
@@ -26,9 +29,8 @@ enum Event {
   BUTTON_D2,
   BUTTON_D7,
   EVENT_RENDER = 0xA0,
+  EVENT_TICK = 0xA1,
 };
-
-class ListenerTest;
 
 class Listener {
  public:
@@ -42,26 +44,26 @@ class Listener {
   void deactivate_child(Listener *child);
   void toggle_child(Listener *child);
 
- protected:
-  Listener* parent_ = NULL;
-  
- private:
-  friend class ListenerTest;
- 
-  void unlink();
+
+  void unlink(Listener **head_ptr);
   void push(Listener **head_ptr);
- 
+  
   Listener* next_ = NULL;
   Listener* prev_ = NULL;
   Listener* active_ = NULL;
   Listener* standby_ = NULL;
+
+ protected:
+  Listener* parent_ = NULL;
+  
+ private:
 };
 
 class Tile : public Listener {
- protected:
-   virtual void on_event(Event event_id, bool is_start=true);
-   virtual void render() {}
-   virtual void on_change_event(Event event_id, bool is_start=true) {}
+ public:
+  virtual void on_event(Event event_id, bool is_start=true);
+  virtual void render() {}
+  virtual void on_change_event(Event event_id, bool is_start=true) {}
 };
 
 #endif

@@ -22,8 +22,11 @@
 #define OLED_MOSI 11
 #define OLED_CLK 13
 
-U8G2_SSD1322_NHD_256X64_2_4W_HW_SPI screen(U8G2_R0, OLED_CS, OLED_DC, OLED_RESET);
-Controller controller(&screen);
+Controller &controller(bool reset=false) {
+  static U8G2_SSD1322_NHD_256X64_1_4W_HW_SPI screen(U8G2_R2, OLED_CS, OLED_DC, OLED_RESET);
+  static Controller controller(&screen);
+  return controller;
+}
 
 void isr();
 
@@ -121,7 +124,7 @@ class CY8C95x0A {
         default:
           continue;
       }
-      controller.on_event(i << 4 | changed, (int_status[i] & ~values[i]) != 0);
+      controller().on_event(i << 4 | changed, (int_status[i] & ~values[i]) != 0);
     }
   }
   
@@ -155,8 +158,14 @@ void isr() {
 
 
 StatusPage status_page;
-SquawkDisplay squawk_display_;
-StaticText alt_mode("ALT", 0, 30, u8g2_font_ncenB10_tr);
+SquawkDisplay squawk_display;
+StaticText &alt_mode() {
+  static StaticText alt_mode("ALT", 0, 45, u8g2_font_7x13B_tf);
+  return alt_mode;
+}
+IdentText ident_text("IDNT", 0, 20, u8g2_font_7x13B_tf);
+FunctionGroup xpdr_group;
+FlightId flight_id;
 
 void setup() {
   Serial.begin(115200);
@@ -164,11 +173,17 @@ void setup() {
   pinMode(ENABLE_3V3_PIN, OUTPUT);
   digitalWrite(ENABLE_3V3_PIN, HIGH);
 
-  controller.add_child(&status_page, true);
-  status_page.add_child(&alt_mode, true);
-  status_page.add_child(&squawk_display_, true);
+  controller().add_child(&status_page, true);
+  controller().add_child(&ident_text, true);
+  
+  status_page.add_child(&alt_mode(), true);
+  status_page.add_child(&squawk_display, true);
+  status_page.add_child(&xpdr_group, true);
+
+  xpdr_group.add_function(&flight_id);
 
   controller.begin();
+  controller.on_event(EVENT_RENDER);
   Serial.println("Ready");
 }
 
@@ -176,9 +191,10 @@ uint32_t last_refresh_ms = 0;
 void loop() {
   expander.scan();
 
+  controller.process_event();
   uint32_t now_ms = millis();
-  if (now_ms > last_refresh_ms + 1000) {
+  if (now_ms > last_refresh_ms + 100) {
     last_refresh_ms = now_ms;
-    controller.on_event(EVENT_RENDER);
+    controller.on_event(EVENT_TICK);
   }
 }

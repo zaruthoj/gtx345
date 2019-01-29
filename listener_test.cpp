@@ -1,3 +1,4 @@
+#ifdef __x86_64__
 #include <cstddef>
 #include "../listener.h"
 #include "gtest/gtest.h"
@@ -20,4 +21,4 @@ TEST_F(ListenerTest, ActiveAdd) {
   root_.add_child(&child1_, true);
 }
 
-
+#endif

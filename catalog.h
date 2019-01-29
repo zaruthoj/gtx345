@@ -45,13 +45,13 @@
 #define SQUAWK_Y (TOP + 30)
 #define SQUAWK_CHAR_W 25
 
-#define FLIGHT_ID_LABEL_FONT u8g2_font_7x13B_tf
-#define IDNT_FONT u8g2_font_7x13B_tf 
-#define ALT_FONT u8g2_font_7x13B_tf
-#define FLIGHT_ID_EDIT_LEGEND_FONT u8g2_font_7x13B_tf
+#define FLIGHT_ID_LABEL_FONT u8g2_font_7x13B_tr
+#define IDNT_FONT u8g2_font_7x13B_tr
+#define ALT_FONT u8g2_font_7x13B_tr
+#define FLIGHT_ID_EDIT_LEGEND_FONT u8g2_font_7x13B_tr
 
-#define FLIGHT_ID_FONT u8g2_font_9x18B_mf
-#define FLIGHT_ID_EDIT_LABEL_FONT u8g2_font_9x18B_mf
+#define FLIGHT_ID_FONT u8g2_font_9x18B_mr
+#define FLIGHT_ID_EDIT_LABEL_FONT u8g2_font_9x18B_mr
 
 #define FLIGHT_ID_EDIT_FONT u8g2_font_inb16_mr
 

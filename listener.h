@@ -34,6 +34,7 @@ enum Event {
   CHANGE_ALT,
   CHANGE_STANDBY,
   CHANGE_POWER,
+  CHANGE_IDNT,
 };
 
 class Listener {

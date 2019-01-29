@@ -67,19 +67,25 @@ void SerialCom::on_event(Event event_id, bool is_start) {
       data[0] = '0' + !controller().alt_on_;
       strncpy(cmd, "0x7b91", 7);
       dt[0] = 'N';
-      Serial.print("ub|");
+      Serial.print("UB|");
       break;
     case CHANGE_STANDBY:
       data[0] = '0' + controller().standby_;
       strncpy(cmd, "0x7b91", 7);
       dt[0] = 'N';
-      Serial.print("ub|");
+      Serial.print("UB|");
       data[0] = controller().standby_;
+      break;
+    case CHANGE_IDNT:
+      strncpy(cmd, "0x7b93", 7);
+      dt[0] = 'N';
+      Serial.print("UB|");
+      data[0] = '1';
       break;
     case EVENT_TICK:
       if (millis() > last_watchdog_ms_ + 1000) {
         last_watchdog_ms_ = millis();
-        Serial.println("W");
+        Serial.println("P3DGTX");
       }
       return;
     case CHANGE_POWER:
@@ -222,6 +228,7 @@ void SquawkDisplay::on_change_event(Event event_id, bool is_start) {
       strncpy(controller().squawk_code_, "1200", 5);
     }
     exit_entry();
+    controller().on_event(CHANGE_SQUAWK);
     controller().on_event(EVENT_RENDER);
   }
   EditTile::on_change_event(event_id, is_start);
@@ -258,6 +265,7 @@ void StatusPage::on_change_event(Event event_id, bool is_start) {
 void IdentText::on_change_event(Event event_id, bool is_start) {
   if (event_id == BUTTON_IDNT && is_start) {
     off_time_ms_ = millis() + 18 * 1000;
+    controller().on_event(CHANGE_IDNT);
     controller().on_event(EVENT_RENDER);
   }
   if (event_id == EVENT_TICK) {

@@ -10,6 +10,7 @@ extern const uint8_t * u8g2_font_inb30_mr;
 extern const uint8_t * u8g2_font_inb16_mr;
 extern const uint8_t * u8g2_font_7x13B_tf;
 extern const uint8_t * u8g2_font_7x13_mf;
+extern const uint8_t * u8g2_font_9x18B_mf;
 
 extern uint32_t mock_time_ms;
 
@@ -31,8 +32,17 @@ class U8G2 {
   virtual void drawGlyph(uint8_t x, uint8_t y, int16_t glyph) = 0;
   virtual void drawTriangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t x3, uint8_t y3) {}
   virtual void drawBox(uint8_t x, uint8_t y, uint8_t w, uint8_t h) {}
+  virtual void setPowerSave(bool enable) {}
 
   virtual ~U8G2() {}
 };
+
+class SerialClass {
+ public:
+  void print(const char *data);
+  void println(const char *data);
+};
+
+extern SerialClass Serial;
 #endif
 

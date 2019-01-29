@@ -8,7 +8,7 @@ const uint8_t * u8g2_font_inb30_mr=nullptr;
 const uint8_t * u8g2_font_inb16_mr=nullptr;
 const uint8_t * u8g2_font_7x13B_tf=nullptr;
 const uint8_t * u8g2_font_7x13_mf=nullptr;
-
+const uint8_t * u8g2_font_9x18B_mf=nullptr;
 uint32_t mock_time_ms=1000;
 
 
@@ -23,6 +23,11 @@ void advance_mock_time(uint32_t ms) {
 uint32_t millis() {
   return mock_time_ms;
 }
+
+void SerialClass::print(const char* data) {}
+void SerialClass::println(const char* data) {}
+
+SerialClass Serial;
 
 using testing::NiceMock;
 using testing::_;
@@ -57,6 +62,14 @@ Controller &controller(bool reset=false) {
 StaticText &alt_mode() {
   static StaticText alt_mode("ALT", 0, 45, u8g2_font_7x13B_tf);
   return alt_mode;
+}
+StatusPage &status_page() {
+  static StatusPage internal;
+  return internal;
+}
+FlightIdEdit &flight_id_edit() {
+  static FlightIdEdit internal;
+  return internal;
 }
 
 class EditTest : public ::testing::Test {

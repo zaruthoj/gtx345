@@ -19,15 +19,54 @@
 #define LEFT 0
 #define RIGHT 240
 
+#define ALT_X LEFT
+#define ALT_Y (TOP + 22)
+#define IDNT_X LEFT
+#define IDNT_Y (TOP + 8)
+
+#define FLIGHT_ID_LABEL_CHAR_WIDTH 7
+#define FLIGHT_ID_CHAR_WIDTH 7
+#define FLIGHT_ID_CENTER_X 173
+#define FLIGHT_ID_LABEL_X (FLIGHT_ID_CENTER_X - (FLIGHT_ID_LABEL_CHAR_WIDTH * 4))
+#define FLIGHT_ID_LABEL_Y 30
+#define FLIGHT_ID_Y 50
+
+#define FLIGHT_ID_EDIT_LABEL_X (LEFT + 1)
+#define FLIGHT_ID_EDIT_LABEL_Y (TOP + 20)
+#define FLIGHT_ID_EDIT_LEGEND_LETTERS_Y BOTTOM
+#define FLIGHT_ID_EDIT_LEGEND_NUMBERS_Y (BOTTOM - 12)
+#define FLIGHT_ID_EDIT_LEGEND_CHAR_W 6
+
+#define FLIGHT_ID_EDIT_CHAR_W 14
+#define FLIGHT_ID_EDIT_X (RIGHT - 1 - FLIGHT_ID_EDIT_CHAR_W * 8)
+#define FLIGHT_ID_EDIT_Y (TOP + 20)
+
+#define SQUAWK_X (LEFT + 22)
+#define SQUAWK_Y (TOP + 30)
+#define SQUAWK_CHAR_W 25
+
+#define FLIGHT_ID_LABEL_FONT u8g2_font_7x13B_tf
+#define IDNT_FONT u8g2_font_7x13B_tf 
+#define ALT_FONT u8g2_font_7x13B_tf
+#define FLIGHT_ID_EDIT_LEGEND_FONT u8g2_font_7x13B_tf
+
+#define FLIGHT_ID_FONT u8g2_font_9x18B_mf
+#define FLIGHT_ID_EDIT_LABEL_FONT u8g2_font_9x18B_mf
+
+#define FLIGHT_ID_EDIT_FONT u8g2_font_inb16_mr
+
+#define SQUAWK_FONT u8g2_font_inb30_mr
+
 #define MAX_FLIGHT_ID 8
 #define MAX_EDIT_TEXT MAX_FLIGHT_ID
 
-class Controller : public Listener {
+class Controller : public Tile {
  public:
   Controller(U8G2* screen) : screen_(screen) {}
 
   virtual void on_event(Event event_id, bool is_start=true);
-
+  virtual void on_change_event(Event event_id, bool is_start=true);
+  virtual void render();
   void process_event();
   void begin() {
     screen_->begin();
@@ -42,6 +81,9 @@ class Controller : public Listener {
     flight_id_len_ = strlen(flight_id_);
   }
 
+  bool power_on_ = true;
+  bool alt_on_ = true;
+  bool standby_ = false;
   char squawk_code_[5] = "1200";
   char old_code_[5] = "";
   char flight_id_[MAX_FLIGHT_ID+1] = "N924DB";
@@ -53,6 +95,14 @@ class Controller : public Listener {
    };
    CircularBuffer<EventData, 5> event_queue_;
    U8G2 * const screen_;
+};
+
+class SerialCom : public Listener {
+ public:
+  virtual void on_event(Event event_id, bool is_start=true);
+
+ private:
+  uint32_t last_watchdog_ms_ = 0;
 };
 
 class EditTile : public Tile {
@@ -104,7 +154,7 @@ class EditTile : public Tile {
 
 class SquawkDisplay : public EditTile {
  public:
-  SquawkDisplay() : EditTile(LEFT + 22, TOP + 41, 25, u8g2_font_inb30_mr, 4) {}
+  SquawkDisplay() : EditTile(SQUAWK_X, SQUAWK_Y, SQUAWK_CHAR_W, SQUAWK_FONT, 4) {}
   virtual void on_change_event(Event event_id, bool is_start=true);
 
  private:
@@ -171,7 +221,7 @@ class FlightId : public Tile {
 
 class FlightIdEdit : public EditTile {
  public:
-  FlightIdEdit() : EditTile(RIGHT - 1 - 14 * 8, TOP + 26 + 1, 14, u8g2_font_inb16_mr , 8) {}
+  FlightIdEdit() : EditTile(FLIGHT_ID_EDIT_X, FLIGHT_ID_EDIT_Y, FLIGHT_ID_EDIT_CHAR_W, FLIGHT_ID_EDIT_FONT , 8) {}
   virtual void render();
   virtual char get_cursor_char();
  private:

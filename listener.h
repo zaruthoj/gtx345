@@ -29,7 +29,11 @@ enum Event {
   BUTTON_D2,
   BUTTON_D7,
   EVENT_RENDER = 0xA0,
-  EVENT_TICK = 0xA1,
+  EVENT_TICK,
+  CHANGE_SQUAWK = 0xC0,
+  CHANGE_ALT,
+  CHANGE_STANDBY,
+  CHANGE_POWER,
 };
 
 class Listener {

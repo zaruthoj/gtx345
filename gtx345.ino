@@ -157,15 +157,39 @@ void isr() {
 }
 
 
-StatusPage status_page;
-SquawkDisplay squawk_display;
-StaticText &alt_mode() {
-  static StaticText alt_mode("ALT", 0, 45, u8g2_font_7x13B_tf);
-  return alt_mode;
+StatusPage &status_page() {
+  static StatusPage internal;
+  return internal;
 }
-IdentText ident_text("IDNT", 0, 20, u8g2_font_7x13B_tf);
-FunctionGroup xpdr_group;
-FlightId flight_id;
+SquawkDisplay &squawk_display() {
+  static SquawkDisplay internal;
+  return internal;
+}
+
+StaticText &alt_mode() {
+  static StaticText internal("ALT", ALT_X, ALT_Y, ALT_FONT);
+  return internal;
+}
+IdentText &ident_text() {
+  static IdentText internal("IDNT", IDNT_X, IDNT_Y, IDNT_FONT);
+  return internal;
+}
+FunctionGroup &xpdr_group() {
+  static FunctionGroup internal;
+  return internal;
+}
+FlightId &flight_id() {
+  static FlightId internal;
+  return internal;
+}
+FlightIdEdit &flight_id_edit() {
+  static FlightIdEdit internal;
+  return internal;
+}
+SerialCom &serial_com() {
+  static SerialCom internal;
+  return internal;
+}
 
 void setup() {
   Serial.begin(115200);
@@ -173,17 +197,19 @@ void setup() {
   pinMode(ENABLE_3V3_PIN, OUTPUT);
   digitalWrite(ENABLE_3V3_PIN, HIGH);
 
-  controller().add_child(&status_page, true);
-  controller().add_child(&ident_text, true);
+  controller().add_child(&status_page(), true);
+  controller().add_child(&ident_text(), true);
+  controller().add_child(&flight_id_edit(), false);
+  controller().add_child(&serial_com(), true);
   
-  status_page.add_child(&alt_mode(), true);
-  status_page.add_child(&squawk_display, true);
-  status_page.add_child(&xpdr_group, true);
+  status_page().add_child(&alt_mode(), true);
+  status_page().add_child(&squawk_display(), true);
+  status_page().add_child(&xpdr_group(), true);
 
-  xpdr_group.add_function(&flight_id);
+  xpdr_group().add_function(&flight_id());
 
-  controller.begin();
-  controller.on_event(EVENT_RENDER);
+  controller().begin();
+  controller().on_event(EVENT_RENDER);
   Serial.println("Ready");
 }
 
@@ -191,10 +217,10 @@ uint32_t last_refresh_ms = 0;
 void loop() {
   expander.scan();
 
-  controller.process_event();
+  controller().process_event();
   uint32_t now_ms = millis();
   if (now_ms > last_refresh_ms + 100) {
     last_refresh_ms = now_ms;
-    controller.on_event(EVENT_TICK);
+    controller().on_event(EVENT_TICK);
   }
 }

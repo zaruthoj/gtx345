@@ -3,7 +3,9 @@
 
 extern Controller &controller(bool reset=false);
 extern StaticText &alt_mode();
-
+extern StatusPage &status_page();
+extern FlightId &flight_id();
+extern FlightIdEdit &flight_id_edit();
 
 void Controller::on_event(Event event_id, bool is_start) {
   event_queue_.unshift(EventData{event_id, is_start});
@@ -13,14 +15,81 @@ void Controller::process_event() {
   if (event_queue_.isEmpty()) return;
   EventData event = event_queue_.last();
   if (event.event_id == EVENT_RENDER) {
-    screen_->firstPage();
-    do {
-      Listener::on_event(EVENT_RENDER, event.is_start);
-    } while ( screen_->nextPage() );
+    render();
   } else {
+    on_change_event(event.event_id, event.is_start);
     Listener::on_event(event.event_id, event.is_start);
   }
   event_queue_.pop();
+}
+
+void Controller::render() {
+  if (!power_on_) return;
+  screen_->firstPage();
+  do {
+    Listener::on_event(EVENT_RENDER);
+  } while ( screen_->nextPage() );
+}
+
+void Controller::on_change_event(Event event_id, bool is_start) {
+  if (is_start) {
+    switch (event_id) {
+      case BUTTON_OFF:
+      case BUTTON_ON:
+      {
+        bool turning_on = event_id == BUTTON_ON;
+        if (power_on_ != turning_on) {
+          screen_->setPowerSave(!turning_on);
+        }
+        power_on_ = turning_on;
+        on_event(EVENT_RENDER);
+        on_event(CHANGE_POWER);
+        break;
+      }
+    }
+  }
+}
+
+void SerialCom::on_event(Event event_id, bool is_start) {
+  char data[5] = {'\0', '\0', '\0', '\0'};
+  char cmd[7] = {'\0', '\0', '\0', '\0', '\0', '\0', '\0'};
+  char dt[3] = {'\0', '|', '\0'};
+  uint8_t len = 1;
+  switch (event_id) {
+    case CHANGE_SQUAWK:
+      strncpy(data, controller().squawk_code_, 5);
+      strncpy(cmd, "0x0354", 7);
+      dt[0] = 'D';
+      Serial.print("UW|");
+      len = 4;
+      break;
+    case CHANGE_ALT:
+      data[0] = '0' + !controller().alt_on_;
+      strncpy(cmd, "0x7b91", 7);
+      dt[0] = 'N';
+      Serial.print("ub|");
+      break;
+    case CHANGE_STANDBY:
+      data[0] = '0' + controller().standby_;
+      strncpy(cmd, "0x7b91", 7);
+      dt[0] = 'N';
+      Serial.print("ub|");
+      data[0] = controller().standby_;
+      break;
+    case EVENT_TICK:
+      if (millis() > last_watchdog_ms_ + 1000) {
+        last_watchdog_ms_ = millis();
+        Serial.println("W");
+      }
+      return;
+    case CHANGE_POWER:
+    default:
+      return;
+  }
+  Serial.print(cmd);
+  Serial.print("|");
+  Serial.print(dt);
+  Serial.println(data);
 }
 
 uint8_t EditTile::get_digit(Event event_id) {
@@ -136,7 +205,7 @@ void EditTile::render() {
     controller().get_screen()->setFont(font_);
     controller().get_screen()->drawStr(x_, y_, edit_text_);
     for (int i = edit_digit_ + 1; i < length_; ++i) {
-      controller().get_screen()->drawGlyph(x_ + char_width_ * (edit_digit_ + i + 1), y_, '_');
+      controller().get_screen()->drawGlyph(x_ + char_width_ * i, y_, '_');
     }
     controller().get_screen()->setDrawColor(0);
     controller().get_screen()->drawGlyph(x_ + char_width_ * edit_digit_, y_, get_cursor_char());
@@ -161,6 +230,7 @@ void SquawkDisplay::on_change_event(Event event_id, bool is_start) {
 bool SquawkDisplay::maybe_set_value(Event event_id) {
   if (edit_digit_ >= length_) {
     strncpy(controller().squawk_code_, edit_text_, 5);
+    controller().on_event(CHANGE_SQUAWK);
     return true;
   }
   return false;
@@ -179,7 +249,9 @@ void StaticText::render() {
 void StatusPage::on_change_event(Event event_id, bool is_start) {
   if (event_id == BUTTON_ALT && is_start) {
     toggle_child(&alt_mode());
+    controller().alt_on_ = !controller().alt_on_;
     controller().on_event(EVENT_RENDER);
+    controller().on_event(CHANGE_ALT);
   }
 }
 
@@ -235,15 +307,20 @@ void FunctionGroup::add_function(Tile *function) {
 }
 
 void FlightId::on_change_event(Event event_id, bool is_start) {
-
+  if (event_id == BUTTON_ENT && is_start) {
+    controller().deactivate_child(&status_page());
+    controller().activate_child(&flight_id_edit());
+    controller().on_event(EVENT_RENDER);
+  }
 }
 
 void FlightId::render() {
   controller().get_screen()->setDrawColor(1);
-  controller().get_screen()->setFont(u8g2_font_7x13B_tf);
-  controller().get_screen()->drawStr(146, 30, "FLIGHT ID");
-  controller().get_screen()->setFont(u8g2_font_inb16_mr);
-  controller().get_screen()->drawStr(173 - controller().flight_id_len_ * 7 , 50, controller().flight_id_);
+  controller().get_screen()->setFont(FLIGHT_ID_LABEL_FONT);
+  controller().get_screen()->drawStr(FLIGHT_ID_LABEL_X, FLIGHT_ID_LABEL_Y, "FLIGHT ID");
+  controller().get_screen()->setFont(FLIGHT_ID_FONT);
+  controller().get_screen()->drawStr(FLIGHT_ID_CENTER_X - (controller().flight_id_len_ * FLIGHT_ID_CHAR_WIDTH) / 2,
+                                     FLIGHT_ID_Y, controller().flight_id_);
 }
 
 bool FlightIdEdit::maybe_set_value(Event event_id) {
@@ -254,6 +331,9 @@ bool FlightIdEdit::maybe_set_value(Event event_id) {
       digit_group_ = -1;
     }
     controller().set_flight_id(edit_text_);
+    controller().deactivate_child(&flight_id_edit());
+    controller().activate_child(&status_page());
+    controller().on_event(EVENT_RENDER);
     return true;
   }
   return false;
@@ -321,16 +401,16 @@ bool FlightIdEdit::check_timeouts() {
 
 void FlightIdEdit::render() {
   controller().get_screen()->setDrawColor(1);
-  controller().get_screen()->setFont(u8g2_font_7x13B_tf);
-  controller().get_screen()->drawStr(LEFT + 1, TOP + 13 + 2, "FLIGHT ID");
-  controller().get_screen()->setFont(u8g2_font_7x13_mf);
+  controller().get_screen()->setFont(FLIGHT_ID_EDIT_LABEL_FONT);
+  controller().get_screen()->drawStr(FLIGHT_ID_EDIT_LABEL_X, FLIGHT_ID_EDIT_LABEL_Y, "FLIGHT ID");
+  controller().get_screen()->setFont(FLIGHT_ID_EDIT_LEGEND_FONT);
   for (int i = 0; i < 10; ++i) {
-    uint8_t x = LEFT + 1 + i * (RIGHT - LEFT - 2 - 12) / 9;
-    controller().get_screen()->drawGlyph(x + 6, BOTTOM + 1, '0' + i);
+    uint8_t x = LEFT + 1 + i * (RIGHT - LEFT - 2 - FLIGHT_ID_EDIT_LEGEND_CHAR_W / 2) / 9;
+    controller().get_screen()->drawGlyph(x + FLIGHT_ID_EDIT_LEGEND_CHAR_W, FLIGHT_ID_EDIT_LEGEND_NUMBERS_Y, '0' + i);
     uint8_t cx = x;
     if (i == 8) cx += 3;
     for (int j = 0; j < 3 && i * 3 + j < 26; ++j) {
-      controller().get_screen()->drawGlyph(cx + j*6, BOTTOM + 1 + 7, 'A' + i * 3 + j);
+      controller().get_screen()->drawGlyph(cx + j * FLIGHT_ID_EDIT_LEGEND_CHAR_W, FLIGHT_ID_EDIT_LEGEND_LETTERS_Y, 'A' + i * 3 + j);
     }
   }
   

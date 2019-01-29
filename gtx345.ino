@@ -210,7 +210,6 @@ void setup() {
 
   controller().begin();
   controller().on_event(EVENT_RENDER);
-  Serial.println("Ready");
 }
 
 uint32_t last_refresh_ms = 0;

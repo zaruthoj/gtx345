@@ -22,9 +22,11 @@
 | Matte Clear Coat[2]   | 1     | 3.98  | Rustoleum     |   | [Amazon](https://www.amazon.com/Rust-Oleum-249087-Painters-Purpose-12-Ounce/dp/B002BWORZE/ref=asc_df_B002BWORZE/?tag=hyprod-20&linkCode=df0&hvadid=193184886406&hvpos=1o2&hvnetw=g&hvrand=10833023533317600838&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9031936&hvtargid=pla-308030796454&psc=1)   |
 
 Total Cost: $109.99
+
 Total Cost assuming you have generic components on hand: $73.14
 
 [1] Do not purchase the official Arduino Nano.  It comes with the pin headers installed on the wrong side for this project.  Make sure that whatever Nano clone you buy comes with the pin headers uninstalled.  If the Nano you buy does not come with pin headers, buy an extra pin header strip.
+
 [2] These are generic components.  Links and part numbers are included for reference.  Reasonable substitutions should be fine.
 
 I strongly recommend that you buy 1-2 extras of each electronic component other than the screen.  It's cheap insurance in case you damage or lose one.  Paying for shipping again and being dead in the water for 1-2 weeks because you smoked a 50 cent chip is a terrible experience.

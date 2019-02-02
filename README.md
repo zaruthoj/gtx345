@@ -18,7 +18,7 @@ I've got 4 extra PCBs in hand.  Contact zaruthoj at gmail if you want one.  I'd 
 
 * [BOM](doc/bom.md)
 * Soldering (coming soon)
-* 3D Printing (coming soon)
+* [3D Printing](doc/printing.md)
 * [Finishing](doc/finishing.md)
 * Final Assembly (coming soon)
 

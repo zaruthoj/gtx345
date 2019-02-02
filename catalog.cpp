@@ -301,12 +301,11 @@ void FunctionGroup::on_change_event(Event event_id, bool is_start) {
 }
 
 void FunctionGroup::render() {
-  const PROGMEM uint8_t x = 230;
   controller().get_screen()->setDrawColor(1);
-  controller().get_screen()->drawTriangle(x, 18, x+4, 13, x+8, 18);
-  controller().get_screen()->drawTriangle(x, 59, x+8, 59, x+4, 64);
+  controller().get_screen()->drawTriangle(RIGHT-9, 18, RIGHT-5, 13, RIGHT-1, 18);
+  controller().get_screen()->drawTriangle(RIGHT-9, 59, RIGHT-1, 59, RIGHT-5, 64);
   uint8_t h = 39 / functions_.size();
-  controller().get_screen()->drawBox(x+2, 19 + h * current_function_, 5, h);
+  controller().get_screen()->drawBox(RIGHT-7, 19 + h * current_function_, 5, h);
 }
 
 void FunctionGroup::add_function(Tile *function) {
@@ -327,7 +326,7 @@ void FlightId::render() {
   controller().get_screen()->setFont(FLIGHT_ID_LABEL_FONT);
   controller().get_screen()->drawStr(FLIGHT_ID_LABEL_X, FLIGHT_ID_LABEL_Y, "FLIGHT ID");
   controller().get_screen()->setFont(FLIGHT_ID_FONT);
-  controller().get_screen()->drawStr(FLIGHT_ID_CENTER_X - (controller().flight_id_len_ * FLIGHT_ID_CHAR_WIDTH) / 2,
+  controller().get_screen()->drawStr(FLIGHT_ID_CENTER_X - ((controller().flight_id_len_ - 1) * FLIGHT_ID_CHAR_WIDTH) / 2,
                                      FLIGHT_ID_Y, controller().flight_id_);
 }
 
@@ -413,7 +412,7 @@ void FlightIdEdit::render() {
   controller().get_screen()->drawStr(FLIGHT_ID_EDIT_LABEL_X, FLIGHT_ID_EDIT_LABEL_Y, "FLIGHT ID");
   controller().get_screen()->setFont(FLIGHT_ID_EDIT_LEGEND_FONT);
   for (int i = 0; i < 10; ++i) {
-    uint8_t x = LEFT + 1 + i * (RIGHT - LEFT - 2 - FLIGHT_ID_EDIT_LEGEND_CHAR_W / 2) / 9;
+    uint8_t x = LEFT + 1 + i * (RIGHT - LEFT - 12 - FLIGHT_ID_EDIT_LEGEND_CHAR_W / 2) / 9;
     controller().get_screen()->drawGlyph(x + FLIGHT_ID_EDIT_LEGEND_CHAR_W, FLIGHT_ID_EDIT_LEGEND_NUMBERS_Y, '0' + i);
     uint8_t cx = x;
     if (i == 8) cx += 3;

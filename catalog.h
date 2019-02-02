@@ -17,19 +17,19 @@
 #define TOP 12
 #define BOTTOM 60
 #define LEFT 0
-#define RIGHT 240
+#define RIGHT 254
 
 #define ALT_X LEFT
 #define ALT_Y (TOP + 22)
 #define IDNT_X LEFT
 #define IDNT_Y (TOP + 8)
 
-#define FLIGHT_ID_LABEL_CHAR_WIDTH 7
-#define FLIGHT_ID_CHAR_WIDTH 7
-#define FLIGHT_ID_CENTER_X 173
+#define FLIGHT_ID_LABEL_CHAR_WIDTH 6
+#define FLIGHT_ID_CHAR_WIDTH 14
+#define FLIGHT_ID_CENTER_X 180
 #define FLIGHT_ID_LABEL_X (FLIGHT_ID_CENTER_X - (FLIGHT_ID_LABEL_CHAR_WIDTH * 4))
-#define FLIGHT_ID_LABEL_Y 30
-#define FLIGHT_ID_Y 50
+#define FLIGHT_ID_LABEL_Y 20
+#define FLIGHT_ID_Y 45
 
 #define FLIGHT_ID_EDIT_LABEL_X (LEFT + 1)
 #define FLIGHT_ID_EDIT_LABEL_Y (TOP + 20)
@@ -41,8 +41,8 @@
 #define FLIGHT_ID_EDIT_X (RIGHT - 1 - FLIGHT_ID_EDIT_CHAR_W * 8)
 #define FLIGHT_ID_EDIT_Y (TOP + 20)
 
-#define SQUAWK_X (LEFT + 22)
-#define SQUAWK_Y (TOP + 30)
+#define SQUAWK_X (LEFT + 30)
+#define SQUAWK_Y (TOP + 26)
 #define SQUAWK_CHAR_W 25
 
 #define FLIGHT_ID_LABEL_FONT u8g2_font_7x13B_tr
@@ -50,9 +50,8 @@
 #define ALT_FONT u8g2_font_7x13B_tr
 #define FLIGHT_ID_EDIT_LEGEND_FONT u8g2_font_7x13B_tr
 
-#define FLIGHT_ID_FONT u8g2_font_9x18B_mr
-#define FLIGHT_ID_EDIT_LABEL_FONT u8g2_font_9x18B_mr
-
+#define FLIGHT_ID_EDIT_LABEL_FONT u8g2_font_inb16_mr
+#define FLIGHT_ID_FONT u8g2_font_inb16_mr
 #define FLIGHT_ID_EDIT_FONT u8g2_font_inb16_mr
 
 #define SQUAWK_FONT u8g2_font_inb30_mr
